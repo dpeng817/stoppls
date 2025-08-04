@@ -1,0 +1,35 @@
+rules:
+  - name: "Reply to Recruiters"
+    description: "Automatically reply to recruiter emails"
+    type: "NaturalLanguageRule"
+    prompt: "The email is from a recruiter or about a job opportunity. It mentions terms like 'job opportunity', 'position', 'role', 'hiring', or similar recruitment-related language."
+    enabled: true
+    actions:
+      - type: "reply"
+        parameters:
+          text: "Thank you for reaching out about this opportunity. I'm currently not looking for new positions, but I appreciate your consideration. I'll keep your contact information for future reference."
+      - type: "label"
+        parameters:
+          label: "Recruiters"
+
+  - name: "Archive Newsletters"
+    description: "Automatically archive newsletter emails"
+    type: "NaturalLanguageRule"
+    prompt: "The email is a newsletter or marketing email. It contains an unsubscribe link, is sent to multiple recipients, or has a generic greeting. It's not a personal message directed specifically to me."
+    enabled: true
+    actions:
+      - type: "archive"
+        parameters: {}
+      - type: "label"
+        parameters:
+          label: "Newsletters"
+
+  - name: "Flag Important Emails"
+    description: "Flag emails that require immediate attention"
+    type: "NaturalLanguageRule"
+    prompt: "The email contains urgent information or requires immediate action. It might include words like 'urgent', 'important', 'deadline', 'action required', or similar terms indicating time sensitivity or importance."
+    enabled: true
+    actions:
+      - type: "label"
+        parameters:
+          label: "Important"

@@ -1,0 +1,7 @@
+We are in the root of an empty repository. This repository will be a python-based tool which runs as a background process on the user's mac to monitor incoming emails from a list of addresses, and uses AI to take automated actions on those emails. Here are some guidelines:
+    we will use test driven development. we will _never_ move on from a task until all tests are passing.
+    we will break up tasks to be as atomic as possible.
+    we will use python as the primary language.
+    unit tests will be written and run using pytest. to run python commands, create and use a uv virtualenv in the root of the directory.
+
+Let's first come up with a plan of action for creating this tool. I want you to write out that plan as a simple text file, and then we'll edit that prompt until we agree on the plan.
