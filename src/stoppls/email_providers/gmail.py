@@ -140,9 +140,8 @@ class GmailProvider(EmailProvider):
             query_parts.append(f"({from_query})")
 
         if since:
-            # Format date as YYYY/MM/DD
-            date_str = since.strftime("%Y/%m/%d")
-            query_parts.append(f"after:{date_str}")
+            timestamp = int(since.timestamp())
+            query_parts.append(f"after:{timestamp}")
 
         query = " ".join(query_parts) if query_parts else ""
 
