@@ -1,4 +1,6 @@
-from setuptools import setup, find_packages
+"""Setup script for the stoppls package."""
+
+from setuptools import find_packages, setup
 
 setup(
     name="stoppls",

@@ -9,6 +9,7 @@ A Python-based tool that runs as a background process on macOS to monitor incomi
 - Automated actions: replying, archiving, and filtering emails
 - Natural language configuration interface (users describe rules in plaintext)
 - YAML-based configuration storage
+- Read-only mode for testing and debugging (logs actions without executing them)
 
 ## Installation
 
@@ -84,12 +85,28 @@ Save this file to `~/.config/stoppls/rules.yaml` or specify a custom path with t
 ### Running the email monitor
 
 ```bash
+# Activate the virtual environment first
+source .venv/bin/activate
+
 # Run the email monitor with default settings
-stoppls run
+python -m stoppls.cli run
 
 # Run with custom settings
-stoppls run --credentials /path/to/credentials.json --token /path/to/token.pickle --interval 120 --addresses important@example.com updates@example.com --rules /path/to/rules.yaml --anthropic-key your_api_key_here --verbose
+python -m stoppls.cli run --credentials /path/to/credentials.json --token /path/to/token.pickle --interval 120 --addresses important@example.com updates@example.com --rules /path/to/rules.yaml --anthropic-key your_api_key_here --verbose
+
+# Run in read-only mode (logs actions but doesn't execute them)
+python -m stoppls.cli run --read-only
 ```
+
+### Running as a Background Process
+
+StopPls is designed to run as a background process. For detailed instructions on how to:
+- Run StopPls in the background
+- Keep it running after terminal sessions close
+- Set it up to start automatically
+- Monitor and stop the background process
+
+See the [Background Process documentation](docs/background_process.md).
 
 ### Command-line options
 
@@ -100,6 +117,7 @@ stoppls run --credentials /path/to/credentials.json --token /path/to/token.pickl
 - `--rules`: Path to the rules configuration file (default: ~/.config/stoppls/rules.yaml)
 - `--anthropic-key`: Anthropic API key (defaults to ANTHROPIC_API_KEY environment variable)
 - `--verbose`: Enable verbose logging
+- `--read-only`: Run in read-only mode (log actions but don't execute them)
 
 ## Rule System
 
@@ -124,6 +142,22 @@ Currently, the system supports:
 3. If the AI determines the rule applies, the associated actions are executed
 4. Multiple rules can match a single email, and all matching actions will be executed
 
+### Read-Only Mode
+
+StopPls includes a read-only mode that allows you to test your email rules and see what actions would be taken without actually executing them. This is useful for:
+
+- Testing new rules before applying them to real emails
+- Debugging rule configurations
+- Auditing what actions would be taken on incoming emails
+
+To use read-only mode, add the `--read-only` flag when running the application:
+
+```bash
+python -m stoppls.cli run --read-only
+```
+
+For more details, see the [Read-Only Mode documentation](docs/read_only_mode.md).
+
 ## Development
 
 This project uses test-driven development with pytest.
@@ -131,14 +165,17 @@ This project uses test-driven development with pytest.
 ### Running Tests
 
 ```bash
+# Activate the virtual environment first
+source .venv/bin/activate
+
 # Run all tests
-pytest
+python -m pytest
 
 # Run tests with coverage report
-pytest --cov=src/stoppls
+python -m pytest --cov=src/stoppls
 
 # Run specific test files
-pytest tests/test_gmail_provider.py
+python -m pytest tests/test_gmail_provider.py
 ```
 
 ## Project Structure
@@ -166,6 +203,9 @@ stoppls/
 │   └── test_rule_engine.py
 ├── config/
 │   └── rules.yaml               # Example rules configuration
+├── docs/
+│   ├── read_only_mode.md        # Documentation for read-only mode
+│   └── background_process.md    # Documentation for running as a background process
 ├── README.md
 ├── requirements.txt
 ├── setup.py

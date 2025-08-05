@@ -1,15 +1,10 @@
-"""
-Tests for the configuration module.
-"""
-import importlib.metadata
-import pytest
+"""Tests for the configuration module."""
+
 from stoppls.config import get_version
 
 
 def test_get_version():
-    """
-    Test that get_version returns the expected version.
-    """
+    """Test that get_version returns the expected version."""
     # Since the package is installed in development mode,
     # we expect the actual version from setup.py
     expected_version = "0.1.0"
@@ -17,7 +12,5 @@ def test_get_version():
 
 
 def test_pytest_setup():
-    """
-    Simple test to verify pytest is working correctly.
-    """
+    """Simple test to verify pytest is working correctly."""
     assert True

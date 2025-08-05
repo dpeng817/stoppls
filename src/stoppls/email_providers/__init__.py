@@ -1,3 +1,1 @@
-"""
-Email provider interfaces and implementations.
-"""
+"""Email provider interfaces and implementations."""
