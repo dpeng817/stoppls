@@ -280,11 +280,13 @@ class TestGmailProvider:
         assert len(messages) == 1
         assert messages[0] == mock_email
 
-        # Verify the mocks were called
+        # Verify the mocks were called with the correct timestamp format
+        # The Gmail API uses Unix timestamp for 'after:' queries
+        timestamp = int(since.timestamp())
         self.provider.service.users().messages().list.assert_called_once_with(
             userId="me",
             maxResults=10,
-            q="after:2023/01/01",
+            q=f"after:{timestamp}",
         )
 
     def test_send_reply_when_not_connected(self):

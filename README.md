@@ -96,6 +96,9 @@ python -m stoppls.cli run --credentials /path/to/credentials.json --token /path/
 
 # Run in read-only mode (logs actions but doesn't execute them)
 python -m stoppls.cli run --read-only
+
+# Test rules on a specific email without executing actions
+python -m stoppls.cli dry-run <email-id>
 ```
 
 ### Running as a Background Process
@@ -110,6 +113,8 @@ See the [Background Process documentation](docs/background_process.md).
 
 ### Command-line options
 
+#### Run command
+
 - `--credentials`: Path to the Gmail API credentials file (default: ~/.config/stoppls/credentials.json)
 - `--token`: Path to store the Gmail API token (default: ~/.config/stoppls/token.pickle)
 - `--interval`: Interval between checks in seconds (default: 60)
@@ -118,6 +123,15 @@ See the [Background Process documentation](docs/background_process.md).
 - `--anthropic-key`: Anthropic API key (defaults to ANTHROPIC_API_KEY environment variable)
 - `--verbose`: Enable verbose logging
 - `--read-only`: Run in read-only mode (log actions but don't execute them)
+
+#### Dry-run command
+
+- `email-id`: ID of the email to process (required)
+- `--credentials`: Path to the Gmail API credentials file (default: ~/.config/stoppls/credentials.json)
+- `--token`: Path to store the Gmail API token (default: ~/.config/stoppls/token.pickle)
+- `--rules`: Path to the rules configuration file (default: ~/.config/stoppls/rules.yaml)
+- `--anthropic-key`: Anthropic API key (defaults to ANTHROPIC_API_KEY environment variable)
+- `--verbose`: Enable verbose logging
 
 ## Rule System
 
@@ -150,11 +164,17 @@ StopPls includes a read-only mode that allows you to test your email rules and s
 - Debugging rule configurations
 - Auditing what actions would be taken on incoming emails
 
-To use read-only mode, add the `--read-only` flag when running the application:
+There are two ways to use read-only mode:
 
-```bash
-python -m stoppls.cli run --read-only
-```
+1. Add the `--read-only` flag when running the monitor:
+   ```bash
+   python -m stoppls.cli run --read-only
+   ```
+
+2. Use the `dry-run` command to test rules on a specific email:
+   ```bash
+   python -m stoppls.cli dry-run <email-id>
+   ```
 
 For more details, see the [Read-Only Mode documentation](docs/read_only_mode.md).
 

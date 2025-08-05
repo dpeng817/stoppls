@@ -1,61 +1,84 @@
 # Read-Only Mode
 
-## Overview
+StopPls can run in read-only mode, which allows you to test your rules without actually performing any actions on your emails. This is useful for testing and debugging your rules before applying them to your actual emails.
 
-StopPls includes a read-only mode that allows you to test your email rules and see what actions would be taken without actually executing them. This is useful for:
+## Running in Read-Only Mode
 
-- Testing new rules before applying them to real emails
-- Debugging rule configurations
-- Auditing what actions would be taken on incoming emails
-- Safely exploring the behavior of the system
+There are two ways to use read-only mode:
 
-## Usage
+### 1. Using the `--read-only` flag with the `run` command
 
-To run StopPls in read-only mode, use the `--read-only` flag with the `run` command:
+When running the email monitor, you can use the `--read-only` flag to run in read-only mode:
 
 ```bash
-# Activate the virtual environment first
-source .venv/bin/activate
-
-# Run in read-only mode
 python -m stoppls.cli run --read-only
 ```
 
-You can combine this with other flags:
+In this mode, the monitor will:
+- Connect to your email provider
+- Check for new emails
+- Evaluate emails against your rules
+- Log the actions that would be taken, but not actually perform them
+
+This is useful for testing your rules against real incoming emails without making any changes.
+
+### 2. Using the `dry-run` command for a single email
+
+If you want to test your rules against a specific email, you can use the `dry-run` command:
 
 ```bash
-python -m stoppls.cli run --read-only --verbose --interval 30 --addresses important@example.com
+python -m stoppls.cli dry-run <email-id>
 ```
 
-## How It Works
+This command:
+- Automatically runs in read-only mode
+- Retrieves the specified email by ID
+- Evaluates it against your rules
+- Logs the actions that would be taken, but doesn't perform them
 
-When running in read-only mode:
+This is useful for testing your rules against a specific email, especially when debugging or developing new rules.
 
-1. StopPls connects to your email provider and checks for new emails as usual
-2. Rules are evaluated against incoming emails normally
-3. Instead of executing actions (reply, archive, label), StopPls logs what actions would have been taken
-4. All read-only logs are prefixed with `[READ-ONLY]` for clear identification
+## Finding Email IDs
 
-## Example Output
+To use the `dry-run` command, you need the ID of the email you want to process. In Gmail, you can find the email ID by:
 
-When running in read-only mode, you'll see log messages like:
+1. Opening the email in Gmail
+2. Looking at the URL in your browser
+3. The ID is the long alphanumeric string after `/mail/u/0/#inbox/` in the URL
 
+For example, in the URL `https://mail.google.com/mail/u/0/#inbox/FMfcgzGxSHKLMnoPQRST`, the email ID is `FMfcgzGxSHKLMnoPQRST`.
+
+## Example Usage
+
+```bash
+# Run the dry-run command on a specific email
+python -m stoppls.cli dry-run FMfcgzGxSHKLMnoPQRST
+
+# Run with verbose logging for more details
+python -m stoppls.cli dry-run FMfcgzGxSHKLMnoPQRST --verbose
+
+# Specify a custom rules file
+python -m stoppls.cli dry-run FMfcgzGxSHKLMnoPQRST --rules /path/to/rules.yaml
 ```
-2025-08-04 14:32:15 - stoppls.email_monitor - INFO - [READ-ONLY] Would execute actions for rule: Auto-Reply to Newsletters
-2025-08-04 14:32:15 - stoppls.email_monitor - INFO - [READ-ONLY] Would reply to message: Weekly Newsletter
-2025-08-04 14:32:15 - stoppls.email_monitor - INFO - [READ-ONLY] Would archive message: Weekly Newsletter
-2025-08-04 14:32:15 - stoppls.email_monitor - INFO - [READ-ONLY] Would apply label 'Newsletters' to message: Weekly Newsletter
+
+## Output
+
+The `dry-run` command will output information about:
+- The email that was processed (subject, sender, etc.)
+- Which rules matched the email
+- What actions would be taken for each matching rule
+
+Example output:
+```
+INFO - Starting stoppls dry-run
+INFO - Email ID: FMfcgzGxSHKLMnoPQRST
+INFO - Found email: "Weekly Newsletter" from newsletter@example.com
+INFO - Loaded 3 rules
+INFO - Evaluating email against rules...
+INFO - 1 rules matched this email
+INFO - Rule matched: Newsletter Rule
+INFO - [READ-ONLY] Would apply label 'Newsletters' to message: Weekly Newsletter
+INFO - [READ-ONLY] Would archive message: Weekly Newsletter
 ```
 
-## Best Practices
-
-1. **Test New Rules**: Always test new rules in read-only mode first before enabling them in production
-2. **Use with Verbose Logging**: Combine with `--verbose` for more detailed information
-3. **Regular Audits**: Periodically run in read-only mode to audit what actions would be taken
-4. **Troubleshooting**: Use read-only mode to troubleshoot when rules aren't matching as expected
-
-## Limitations
-
-- Read-only mode still connects to your email provider and reads emails
-- AI evaluation of rules still occurs, which may incur API costs
-- The system still needs the same permissions and credentials as normal operation
+This allows you to verify that your rules are working as expected before applying them to your actual emails.

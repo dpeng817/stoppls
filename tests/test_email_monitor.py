@@ -78,6 +78,28 @@ class MockEmailProvider(EmailProvider):
         self.labeled_messages.append({"message": message, "label": label})
         return True
         
+    def get_message_by_id(self, message_id):
+        """Get a specific message by its ID.
+
+        Args:
+            message_id: The ID of the message to retrieve.
+
+        Returns:
+            Optional[EmailMessage]: The email message if found, None otherwise.
+
+        Raises:
+            ConnectionError: If not connected to the email provider.
+        """
+        if not self._connected:
+            raise ConnectionError("Not connected")
+
+        # Find the message with the matching ID
+        for message in self.messages:
+            if message.message_id == message_id:
+                return message
+                
+        return None
+        
     def send_email(self, to, subject, body_text, body_html=None):
         """Send an email.
 

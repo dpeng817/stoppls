@@ -82,6 +82,21 @@ class EmailProvider(ABC):
             ConnectionError: If not connected to the email provider.
         """
         pass
+        
+    @abstractmethod
+    def get_message_by_id(self, message_id: str) -> Optional[EmailMessage]:
+        """Get a specific message by its ID.
+
+        Args:
+            message_id: The ID of the message to retrieve.
+
+        Returns:
+            Optional[EmailMessage]: The email message if found, None otherwise.
+
+        Raises:
+            ConnectionError: If not connected to the email provider.
+        """
+        pass
 
     @abstractmethod
     def send_reply(

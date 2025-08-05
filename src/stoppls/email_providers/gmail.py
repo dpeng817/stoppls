@@ -171,6 +171,36 @@ class GmailProvider(EmailProvider):
             email_messages.append(email_msg)
 
         return email_messages
+        
+    def get_message_by_id(self, message_id: str) -> Optional[EmailMessage]:
+        """Get a specific message by its ID.
+
+        Args:
+            message_id: The ID of the message to retrieve.
+
+        Returns:
+            Optional[EmailMessage]: The email message if found, None otherwise.
+
+        Raises:
+            ConnectionError: If not connected to the email provider.
+        """
+        if not self.is_connected():
+            raise ConnectionError("Not connected to Gmail API")
+
+        try:
+            # Get the message from Gmail API
+            message = (
+                self.service.users()
+                .messages()
+                .get(userId="me", id=message_id, format="full")
+                .execute()
+            )
+
+            # Parse and return the message
+            return self._parse_message(message)
+        except Exception as e:
+            self.logger.error(f"Error retrieving message with ID {message_id}: {e}")
+            return None
 
     def _create_reply(
         self,
