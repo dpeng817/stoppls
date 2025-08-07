@@ -1,9 +1,9 @@
 """Gmail provider implementation using the Gmail API."""
 
 import base64
+import json
 import logging
 import pickle
-import json
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
@@ -49,7 +48,7 @@ class GmailProvider(EmailProvider):
                     creds = pickle.load(token)
                     if creds and creds.valid:
                         return json.loads(creds.to_json())
-            
+
             # If we get here, either the token doesn't exist or is invalid
             return None
         except Exception as e:
@@ -86,7 +85,9 @@ class GmailProvider(EmailProvider):
                     pickle.dump(creds, token)
 
             # Build the Gmail API service
-            self.service = build("gmail", "v1", credentials=creds, cache_discovery=False)
+            self.service = build(
+                "gmail", "v1", credentials=creds, cache_discovery=False
+            )
             return True
 
         except Exception as e:
@@ -346,17 +347,11 @@ class GmailProvider(EmailProvider):
         try:
             # Create the message
             message = self._create_message(
-                to=to,
-                subject=subject,
-                body_text=body_text,
-                body_html=body_html
+                to=to, subject=subject, body_text=body_text, body_html=body_html
             )
 
             # Send the message
-            self.service.users().messages().send(
-                userId="me",
-                body=message
-            ).execute()
+            self.service.users().messages().send(userId="me", body=message).execute()
 
             self.logger.info(f"Sent email to {to} with subject: {subject}")
             return True
@@ -364,7 +359,7 @@ class GmailProvider(EmailProvider):
         except Exception as e:
             self.logger.error(f"Error sending email: {e}")
             return False
-            
+
     def _create_message(
         self, to: str, subject: str, body_text: str, body_html: Optional[str] = None
     ) -> Dict:
@@ -379,9 +374,9 @@ class GmailProvider(EmailProvider):
         Returns:
             Dict: The message in the format expected by the Gmail API.
         """
-        from email.mime.text import MIMEText
-        from email.mime.multipart import MIMEMultipart
         import base64
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
 
         # Create the message container
         message = MIMEMultipart("alternative")
@@ -401,7 +396,7 @@ class GmailProvider(EmailProvider):
         encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
 
         return {"raw": encoded_message}
-        
+
     def _parse_message(self, message: Dict[str, Any]) -> EmailMessage:
         """Parse a Gmail API message into an EmailMessage.
 
@@ -462,6 +457,23 @@ class GmailProvider(EmailProvider):
                 message["payload"]["body"]["data"]
             ).decode("utf-8")
 
+        # Determine location from labelIds
+        location = None
+        if "labelIds" in message:
+            # Gmail uses specific label IDs for different locations
+            label_ids = message.get("labelIds", [])
+            if "INBOX" in label_ids:
+                location = "INBOX"
+            elif "SPAM" in label_ids:
+                location = "SPAM"
+            elif "TRASH" in label_ids:
+                location = "TRASH"
+            elif "DRAFT" in label_ids:
+                location = "DRAFT"
+            elif "SENT" in label_ids:
+                location = "SENT"
+            # Add more location mappings as needed
+
         # Create EmailMessage
         return EmailMessage(
             message_id=message_id,
@@ -472,4 +484,5 @@ class GmailProvider(EmailProvider):
             body_text=body_text,
             body_html=body_html,
             date=date,
+            location=location,
         )

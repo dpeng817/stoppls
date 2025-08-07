@@ -75,6 +75,15 @@ class RuleEngine:
                 self.logger.debug(f"Skipping disabled rule: {rule.name}")
                 continue
 
+            # Skip rules with location filters that don't match the email's location
+            if hasattr(rule, "location") and rule.location and email.location:
+                if rule.location != email.location:
+                    self.logger.debug(
+                        f"Skipping rule {rule.name} because location filter {rule.location} "
+                        f"doesn't match email location {email.location}"
+                    )
+                    continue
+
             self.logger.debug(f"Evaluating rule: {rule.name}")
 
             # Evaluate the rule
@@ -162,7 +171,7 @@ class RuleEngine:
         Please evaluate if the following email matches the rule:
         
         From: {email.sender}
-        To: {', '.join(email.recipients)}
+        To: {", ".join(email.recipients)}
         Subject: {email.subject}
         Date: {email.date}
         

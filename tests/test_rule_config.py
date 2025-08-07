@@ -4,6 +4,7 @@ import os
 import tempfile
 
 import pytest
+
 from stoppls.config import (
     NaturalLanguageRule,
     Rule,

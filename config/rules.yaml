@@ -4,6 +4,7 @@ rules:
     type: "NaturalLanguageRule"
     prompt: "The email is from a recruiter or about a job opportunity. It mentions terms like 'job opportunity', 'position', 'role', 'hiring', or similar recruitment-related language."
     enabled: true
+    location: "INBOX"  # Only apply to emails in the inbox
     actions:
       - type: "reply"
         parameters:
@@ -17,6 +18,7 @@ rules:
     type: "NaturalLanguageRule"
     prompt: "The email is a newsletter or marketing email. It contains an unsubscribe link, is sent to multiple recipients, or has a generic greeting. It's not a personal message directed specifically to me."
     enabled: true
+    location: "INBOX"  # Only apply to emails in the inbox
     actions:
       - type: "archive"
         parameters: {}
@@ -29,7 +31,21 @@ rules:
     type: "NaturalLanguageRule"
     prompt: "The email contains urgent information or requires immediate action. It might include words like 'urgent', 'important', 'deadline', 'action required', or similar terms indicating time sensitivity or importance."
     enabled: true
+    # No location specified - will apply to emails in any location
     actions:
       - type: "label"
         parameters:
           label: "Important"
+
+  - name: "Auto-Archive Spam"
+    description: "Automatically archive emails that made it to inbox but look like spam"
+    type: "NaturalLanguageRule"
+    prompt: "The email appears to be spam that made it through the spam filter. It contains suspicious links, excessive promotional language, or is from an unknown sender with generic content."
+    enabled: true
+    location: "INBOX"  # Only apply to emails in the inbox
+    actions:
+      - type: "archive"
+        parameters: {}
+      - type: "label"
+        parameters:
+          label: "Possible-Spam"

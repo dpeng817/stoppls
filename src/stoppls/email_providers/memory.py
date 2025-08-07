@@ -49,7 +49,10 @@ class InMemoryEmailProvider(EmailProvider):
         return self._connected
 
     def get_messages(
-        self, from_addresses: Optional[List[str]] = None, since: Optional[datetime] = None, limit: int = 10
+        self,
+        from_addresses: Optional[List[str]] = None,
+        since: Optional[datetime] = None,
+        limit: int = 10,
     ) -> List[EmailMessage]:
         """Get messages from the email provider.
 
@@ -86,7 +89,10 @@ class InMemoryEmailProvider(EmailProvider):
         return filtered_messages[:limit]
 
     def send_reply(
-        self, original_message: EmailMessage, reply_text: str, reply_html: Optional[str] = None
+        self,
+        original_message: EmailMessage,
+        reply_text: str,
+        reply_html: Optional[str] = None,
     ) -> bool:
         """Send a reply to an email message.
 
@@ -104,11 +110,13 @@ class InMemoryEmailProvider(EmailProvider):
         if not self._connected:
             raise ConnectionError("Not connected to email provider")
 
-        self.replied_messages.append({
-            "original_message": original_message,
-            "reply_text": reply_text,
-            "reply_html": reply_html,
-        })
+        self.replied_messages.append(
+            {
+                "original_message": original_message,
+                "reply_text": reply_text,
+                "reply_html": reply_html,
+            }
+        )
         return True
 
     def archive_message(self, message: EmailMessage) -> bool:
@@ -145,12 +153,14 @@ class InMemoryEmailProvider(EmailProvider):
         if not self._connected:
             raise ConnectionError("Not connected to email provider")
 
-        self.labeled_messages.append({
-            "message": message,
-            "label": label,
-        })
+        self.labeled_messages.append(
+            {
+                "message": message,
+                "label": label,
+            }
+        )
         return True
-        
+
     def send_email(
         self, to: str, subject: str, body_text: str, body_html: Optional[str] = None
     ) -> bool:
@@ -171,13 +181,15 @@ class InMemoryEmailProvider(EmailProvider):
         if not self._connected:
             raise ConnectionError("Not connected to email provider")
 
-        self.sent_emails.append({
-            "to": to,
-            "subject": subject,
-            "body_text": body_text,
-            "body_html": body_html,
-            "timestamp": datetime.now(),
-        })
+        self.sent_emails.append(
+            {
+                "to": to,
+                "subject": subject,
+                "body_text": body_text,
+                "body_html": body_html,
+                "timestamp": datetime.now(),
+            }
+        )
         return True
 
     def add_message(self, message: EmailMessage) -> None:
@@ -189,6 +201,55 @@ class InMemoryEmailProvider(EmailProvider):
             message: The message to add.
         """
         self.messages.append(message)
+
+    def add_message_with_location(
+        self,
+        message_id: str,
+        thread_id: str,
+        sender: str,
+        recipients: List[str],
+        subject: str,
+        body_text: str,
+        location: str,
+        body_html: Optional[str] = None,
+        date: Optional[datetime] = None,
+    ) -> EmailMessage:
+        """Add a message with a specific location to the in-memory provider.
+
+        This method is specific to the in-memory provider and is used for testing
+        the location filtering functionality.
+
+        Args:
+            message_id: Unique identifier for the message
+            thread_id: Identifier for the thread the message belongs to
+            sender: Email address of the sender
+            recipients: List of recipient email addresses
+            subject: Subject of the message
+            body_text: Plain text body of the message
+            location: Location of the message (e.g., "INBOX", "SPAM")
+            body_html: HTML body of the message (optional)
+            date: Date and time the message was sent (defaults to now)
+
+        Returns:
+            EmailMessage: The created message that was added
+        """
+        if date is None:
+            date = datetime.now()
+
+        message = EmailMessage(
+            message_id=message_id,
+            thread_id=thread_id,
+            sender=sender,
+            recipients=recipients,
+            subject=subject,
+            body_text=body_text,
+            body_html=body_html,
+            date=date,
+            location=location,
+        )
+
+        self.messages.append(message)
+        return message
 
     def clear_messages(self) -> None:
         """Clear all messages from the in-memory provider.

@@ -54,7 +54,9 @@ def run_monitor(args):
             "No Anthropic API key provided. AI rule evaluation will be disabled."
         )
     if args.read_only:
-        logger.info("Running in READ-ONLY mode - actions will be logged but not executed")
+        logger.info(
+            "Running in READ-ONLY mode - actions will be logged but not executed"
+        )
     if args.enable_reports:
         logger.info(f"Daily reports enabled - will be sent at {args.report_time}")
     else:
@@ -67,7 +69,7 @@ def run_monitor(args):
     report_time = None
     if args.report_time:
         try:
-            hour, minute = map(int, args.report_time.split(':'))
+            hour, minute = map(int, args.report_time.split(":"))
             report_time = datetime_time(hour, minute)
         except (ValueError, TypeError) as e:
             logger.error(f"Invalid report time format: {e}")
@@ -148,9 +150,9 @@ def main():
         "--verbose", action="store_true", help="Enable verbose logging"
     )
     run_parser.add_argument(
-        "--read-only", 
-        action="store_true", 
-        help="Run in read-only mode (log actions but don't execute them)"
+        "--read-only",
+        action="store_true",
+        help="Run in read-only mode (log actions but don't execute them)",
     )
     run_parser.add_argument(
         "--enable-reports",

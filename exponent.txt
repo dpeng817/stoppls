@@ -1,4 +1,5 @@
 # StopPls Project Context
+Make sure you read and understand `@~/exponent.txt`, and all relevant files which it references.
 
 ## Project Overview
 StopPls is a Python-based tool that runs as a background process on macOS to monitor incoming emails from specified addresses and uses AI to take automated actions on those emails.

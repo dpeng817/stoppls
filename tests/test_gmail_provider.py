@@ -1,6 +1,5 @@
 """Tests for the Gmail provider."""
 
-import base64
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
@@ -37,19 +36,19 @@ class TestGmailProvider:
         """Test successful connection."""
         # Mock the token file exists
         mock_exists.return_value = True
-        
+
         # Mock the credentials
         mock_creds = MagicMock()
         mock_creds.valid = True
         mock_pickle_load.return_value = mock_creds
-        
+
         # Mock the service
         mock_service = MagicMock()
         mock_build.return_value = mock_service
-        
+
         # Connect
         result = self.provider.connect()
-        
+
         # Verify the result
         assert result is True
         assert self.provider.service == mock_service
@@ -61,13 +60,13 @@ class TestGmailProvider:
         """Test connection with no credentials."""
         # Mock the token file doesn't exist
         mock_exists.return_value = False
-        
+
         # Mock the flow to raise an exception
         mock_flow.side_effect = Exception("Test error")
-        
+
         # Connect
         result = self.provider.connect()
-        
+
         # Verify the result
         assert result is False
         assert self.provider.service is None
@@ -84,18 +83,18 @@ class TestGmailProvider:
         """Test connection error."""
         # Mock the token file exists
         mock_exists.return_value = True
-        
+
         # Mock the credentials
         mock_creds = MagicMock()
         mock_creds.valid = True
         mock_pickle_load.return_value = mock_creds
-        
+
         # Mock the service to raise an exception
         mock_build.side_effect = Exception("Test error")
-        
+
         # Connect
         result = self.provider.connect()
-        
+
         # Verify the result
         assert result is False
         assert self.provider.service is None
@@ -280,11 +279,13 @@ class TestGmailProvider:
         assert len(messages) == 1
         assert messages[0] == mock_email
 
-        # Verify the mocks were called
+        # Verify the mocks were called with the correct timestamp format
+        # Convert the datetime to a timestamp
+        timestamp = int(since.timestamp())
         self.provider.service.users().messages().list.assert_called_once_with(
             userId="me",
             maxResults=10,
-            q="after:2023/01/01",
+            q=f"after:{timestamp}",
         )
 
     def test_send_reply_when_not_connected(self):
@@ -333,9 +334,7 @@ class TestGmailProvider:
         assert result is True
 
         # Verify the mocks were called
-        mock_create_reply.assert_called_once_with(
-            mock_message, "Reply text", None
-        )
+        mock_create_reply.assert_called_once_with(mock_message, "Reply text", None)
         self.provider.service.users().messages().send.assert_called_once_with(
             userId="me", body=mock_reply
         )
@@ -570,3 +569,42 @@ class TestGmailProvider:
         assert result.subject == "Test Subject"
         assert result.body_text == "Test body"
         assert result.body_html is None
+
+    def test_parse_message_with_location(self):
+        """Test _parse_message with location information."""
+        # Create a mock Gmail API message with labelIds
+        mock_api_message = {
+            "id": "msg1",
+            "threadId": "thread1",
+            "labelIds": ["INBOX", "UNREAD", "CATEGORY_PERSONAL"],
+            "payload": {
+                "headers": [
+                    {"name": "From", "value": "sender@example.com"},
+                    {"name": "To", "value": "recipient@example.com"},
+                    {"name": "Subject", "value": "Test Subject"},
+                    {"name": "Date", "value": "Mon, 01 Jan 2023 12:34:56 +0000"},
+                ],
+                "body": {"data": "VGVzdCBib2R5"},  # Base64 for "Test body"
+            },
+        }
+
+        # Call _parse_message
+        result = self.provider._parse_message(mock_api_message)
+
+        # Verify the result includes the correct location
+        assert result.location == "INBOX"
+
+        # Test with SPAM location
+        mock_api_message["labelIds"] = ["SPAM"]
+        result = self.provider._parse_message(mock_api_message)
+        assert result.location == "SPAM"
+
+        # Test with no recognized location
+        mock_api_message["labelIds"] = ["CATEGORY_UPDATES", "UNREAD"]
+        result = self.provider._parse_message(mock_api_message)
+        assert result.location is None
+
+        # Test with no labelIds
+        del mock_api_message["labelIds"]
+        result = self.provider._parse_message(mock_api_message)
+        assert result.location is None

@@ -62,6 +62,7 @@ class EmailMonitor:
         self.action_tracker = None
         if enable_reports:
             from stoppls.reporting.action_tracker import ActionTracker
+
             self.action_tracker = ActionTracker(report_time=report_time)
 
         self.last_check_time = None
@@ -80,7 +81,9 @@ class EmailMonitor:
 
         self.logger.info("Starting email monitor")
         if self.read_only:
-            self.logger.info("Running in READ-ONLY mode - actions will be logged but not executed")
+            self.logger.info(
+                "Running in READ-ONLY mode - actions will be logged but not executed"
+            )
 
         # Connect to the email provider
         if not self.email_provider.is_connected():
@@ -191,26 +194,38 @@ class EmailMonitor:
             rule_result: The result of evaluating a rule against the message.
         """
         if self.read_only:
-            self.logger.info(f"[READ-ONLY] Would execute actions for rule: {rule_result.rule.name}")
+            self.logger.info(
+                f"[READ-ONLY] Would execute actions for rule: {rule_result.rule.name}"
+            )
             # Log each action that would be taken but don't execute them
             for action in rule_result.actions:
                 if action.type == "reply":
                     reply_text = action.parameters.get("text", "")
-                    self.logger.info(f"[READ-ONLY] Would reply to message: {message.subject}")
+                    self.logger.info(
+                        f"[READ-ONLY] Would reply to message: {message.subject}"
+                    )
                     self.logger.debug(f"[READ-ONLY] Reply text would be: {reply_text}")
                 elif action.type == "archive":
-                    self.logger.info(f"[READ-ONLY] Would archive message: {message.subject}")
+                    self.logger.info(
+                        f"[READ-ONLY] Would archive message: {message.subject}"
+                    )
                 elif action.type == "label":
                     label = action.parameters.get("label", "")
                     if label:
-                        self.logger.info(f"[READ-ONLY] Would apply label '{label}' to message: {message.subject}")
+                        self.logger.info(
+                            f"[READ-ONLY] Would apply label '{label}' to message: {message.subject}"
+                        )
                     else:
-                        self.logger.warning("[READ-ONLY] Would attempt to apply label, but no label specified")
+                        self.logger.warning(
+                            "[READ-ONLY] Would attempt to apply label, but no label specified"
+                        )
                 else:
-                    self.logger.warning(f"[READ-ONLY] Would attempt unknown action type: {action.type}")
+                    self.logger.warning(
+                        f"[READ-ONLY] Would attempt unknown action type: {action.type}"
+                    )
             # Return early to avoid executing any actions
             return
-            
+
         self.logger.info(f"Executing actions for rule: {rule_result.rule.name}")
 
         for action in rule_result.actions:
@@ -218,7 +233,7 @@ class EmailMonitor:
 
             try:
                 success = False
-                
+
                 if action.type == "reply":
                     success = self._execute_reply_action(message, action)
                 elif action.type == "archive":
@@ -232,9 +247,7 @@ class EmailMonitor:
                 # Record the action if it was successful and action tracker is enabled
                 if success and self.action_tracker:
                     self.action_tracker.record_action(
-                        message=message,
-                        action=action,
-                        rule_name=rule_result.rule.name
+                        message=message, action=action, rule_name=rule_result.rule.name
                     )
 
             except Exception as e:
@@ -246,7 +259,7 @@ class EmailMonitor:
         Args:
             message: The email message to reply to.
             action: The reply action to execute.
-            
+
         Returns:
             bool: True if the action was successful, False otherwise.
         """
@@ -265,7 +278,7 @@ class EmailMonitor:
             self.logger.info("Reply sent successfully")
         else:
             self.logger.error("Failed to send reply")
-            
+
         return success
 
     def _execute_archive_action(self, message: EmailMessage, action: RuleAction):
@@ -274,7 +287,7 @@ class EmailMonitor:
         Args:
             message: The email message to archive.
             action: The archive action to execute.
-            
+
         Returns:
             bool: True if the action was successful, False otherwise.
         """
@@ -287,7 +300,7 @@ class EmailMonitor:
             self.logger.info("Message archived successfully")
         else:
             self.logger.error("Failed to archive message")
-            
+
         return success
 
     def _execute_label_action(self, message: EmailMessage, action: RuleAction):
@@ -296,7 +309,7 @@ class EmailMonitor:
         Args:
             message: The email message to label.
             action: The label action to execute.
-            
+
         Returns:
             bool: True if the action was successful, False otherwise.
         """
@@ -315,7 +328,7 @@ class EmailMonitor:
             self.logger.info("Label applied successfully")
         else:
             self.logger.error("Failed to apply label")
-            
+
         return success
 
     def _run_loop(self):
@@ -329,14 +342,13 @@ class EmailMonitor:
             try:
                 # Check for new messages
                 self.check_for_new_messages()
-                
+
                 # Check if it's time to send a daily report
                 if self.action_tracker and self.monitored_addresses:
                     # Send report to the first monitored address
                     recipient = self.monitored_addresses[0]
                     self.action_tracker.check_and_send_daily_report(
-                        email_provider=self.email_provider,
-                        recipient_email=recipient
+                        email_provider=self.email_provider, recipient_email=recipient
                     )
 
                 # Sleep for the check interval

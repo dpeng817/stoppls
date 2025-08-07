@@ -19,6 +19,7 @@ class EmailMessage:
         body_text: Plain text body of the message
         body_html: HTML body of the message (optional)
         date: Date and time the message was sent
+        location: Location of the message (e.g., "INBOX", "SPAM", etc.)
     """
 
     message_id: str
@@ -29,6 +30,7 @@ class EmailMessage:
     body_text: str
     body_html: Optional[str] = None
     date: Optional[datetime] = None
+    location: Optional[str] = None
 
 
 class EmailProvider(ABC):
@@ -66,7 +68,10 @@ class EmailProvider(ABC):
 
     @abstractmethod
     def get_messages(
-        self, from_addresses: Optional[List[str]] = None, since: Optional[datetime] = None, limit: int = 10
+        self,
+        from_addresses: Optional[List[str]] = None,
+        since: Optional[datetime] = None,
+        limit: int = 10,
     ) -> List[EmailMessage]:
         """Get messages from the email provider.
 
@@ -85,7 +90,10 @@ class EmailProvider(ABC):
 
     @abstractmethod
     def send_reply(
-        self, original_message: EmailMessage, reply_text: str, reply_html: Optional[str] = None
+        self,
+        original_message: EmailMessage,
+        reply_text: str,
+        reply_html: Optional[str] = None,
     ) -> bool:
         """Send a reply to an email message.
 
@@ -132,7 +140,7 @@ class EmailProvider(ABC):
             ConnectionError: If not connected to the email provider.
         """
         pass
-        
+
     @abstractmethod
     def send_email(
         self, to: str, subject: str, body_text: str, body_html: Optional[str] = None

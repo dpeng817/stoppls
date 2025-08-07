@@ -3,8 +3,6 @@
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from stoppls.config import NaturalLanguageRule, RuleAction, RuleConfig
 from stoppls.email_providers.base import EmailMessage
 from stoppls.rule_engine import RuleEngine, RuleResult
@@ -74,6 +72,7 @@ class TestRuleEngine:
     @patch("stoppls.rule_engine.RuleEngine._evaluate_rule_with_ai")
     def test_evaluate_email(self, mock_evaluate_rule_with_ai):
         """Test evaluating an email against rules."""
+
         # Mock the _evaluate_rule_with_ai method to return True for rule1 and rule3
         def mock_evaluate_side_effect(rule, email):
             if rule == self.rule1 or rule == self.rule3:
@@ -180,9 +179,7 @@ class TestRuleEngine:
     def test_rule_result_init(self):
         """Test initializing a RuleResult."""
         # Create a rule result
-        result = RuleResult(
-            rule=self.rule1, matched=True, actions=self.rule1.actions
-        )
+        result = RuleResult(rule=self.rule1, matched=True, actions=self.rule1.actions)
 
         # Verify the attributes
         assert result.rule == self.rule1

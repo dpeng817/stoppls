@@ -4,7 +4,7 @@ import importlib.metadata
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 
@@ -90,6 +90,7 @@ class Rule(ABC):
                 name=data["name"],
                 description=data["description"],
                 prompt=data["prompt"],
+                location=data.get("location"),
                 enabled=data.get("enabled", True),
                 actions=[
                     RuleAction(
@@ -108,9 +109,11 @@ class NaturalLanguageRule(Rule):
 
     Attributes:
         prompt: Natural language prompt describing when this rule should apply
+        location: Optional location filter (e.g., "INBOX", "SPAM") to restrict where the rule applies
     """
 
     prompt: str = ""
+    location: Optional[str] = None
 
     def get_prompt_section(self) -> str:
         """Get the prompt section for this rule.
@@ -126,7 +129,7 @@ class NaturalLanguageRule(Rule):
         Returns:
             Dict[str, Any]: Subclass-specific fields as a dictionary
         """
-        return {"prompt": self.prompt}
+        return {"prompt": self.prompt, "location": self.location}
 
 
 @dataclass

@@ -77,7 +77,7 @@ class MockEmailProvider(EmailProvider):
 
         self.labeled_messages.append({"message": message, "label": label})
         return True
-        
+
     def send_email(self, to, subject, body_text, body_html=None):
         """Send an email.
 
@@ -96,13 +96,15 @@ class MockEmailProvider(EmailProvider):
         if not self._connected:
             raise ConnectionError("Not connected")
 
-        self.sent_emails.append({
-            "to": to,
-            "subject": subject,
-            "body_text": body_text,
-            "body_html": body_html,
-            "timestamp": datetime.now(),
-        })
+        self.sent_emails.append(
+            {
+                "to": to,
+                "subject": subject,
+                "body_text": body_text,
+                "body_html": body_html,
+                "timestamp": datetime.now(),
+            }
+        )
         return True
 
     def add_test_message(self, message):
@@ -519,10 +521,18 @@ class TestEmailMonitor:
         assert len(self.provider.labeled_messages) == 0
 
         # Verify that actions were logged
-        mock_logger_info.assert_any_call(f"[READ-ONLY] Would execute actions for rule: {rule.name}")
-        mock_logger_info.assert_any_call("[READ-ONLY] Would reply to message: Important Message")
-        mock_logger_info.assert_any_call("[READ-ONLY] Would archive message: Important Message")
-        mock_logger_info.assert_any_call("[READ-ONLY] Would apply label 'Important' to message: Important Message")
+        mock_logger_info.assert_any_call(
+            f"[READ-ONLY] Would execute actions for rule: {rule.name}"
+        )
+        mock_logger_info.assert_any_call(
+            "[READ-ONLY] Would reply to message: Important Message"
+        )
+        mock_logger_info.assert_any_call(
+            "[READ-ONLY] Would archive message: Important Message"
+        )
+        mock_logger_info.assert_any_call(
+            "[READ-ONLY] Would apply label 'Important' to message: Important Message"
+        )
 
     @patch("time.sleep", side_effect=lambda x: None)  # Don't actually sleep in tests
     def test_run_loop(self, mock_sleep):

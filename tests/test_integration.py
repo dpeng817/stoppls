@@ -6,13 +6,10 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
-import yaml
 
-from stoppls.config import RuleConfig, load_rules
 from stoppls.email_monitor import EmailMonitor
 from stoppls.email_providers.base import EmailMessage
 from stoppls.email_providers.memory import InMemoryEmailProvider
-from stoppls.rule_engine import RuleEngine
 
 
 class TestIntegration:
@@ -29,7 +26,9 @@ class TestIntegration:
     def temp_rules_file(self):
         """Create a temporary rules file for testing."""
         # Create a temporary file
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as temp:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False
+        ) as temp:
             # Write test rules to the file
             rules_yaml = """
             rules:
@@ -118,12 +117,21 @@ class TestIntegration:
         assert success, "Failed to run single iteration"
 
         # Verify that the recruiter email was replied to
-        assert len(memory_provider.replied_messages) == 1, "Recruiter email was not replied to"
-        assert memory_provider.replied_messages[0]["original_message"] == recruiter_email
-        assert "not looking for new positions" in memory_provider.replied_messages[0]["reply_text"]
+        assert len(memory_provider.replied_messages) == 1, (
+            "Recruiter email was not replied to"
+        )
+        assert (
+            memory_provider.replied_messages[0]["original_message"] == recruiter_email
+        )
+        assert (
+            "not looking for new positions"
+            in memory_provider.replied_messages[0]["reply_text"]
+        )
 
         # Verify that the recruiter email was labeled
-        assert len(memory_provider.labeled_messages) == 1, "Recruiter email was not labeled"
+        assert len(memory_provider.labeled_messages) == 1, (
+            "Recruiter email was not labeled"
+        )
         assert memory_provider.labeled_messages[0]["message"] == recruiter_email
         assert memory_provider.labeled_messages[0]["label"] == "Recruiters"
 
@@ -179,11 +187,15 @@ class TestIntegration:
         assert success, "Failed to run single iteration"
 
         # Verify that the newsletter email was archived
-        assert len(memory_provider.archived_messages) == 1, "Newsletter email was not archived"
+        assert len(memory_provider.archived_messages) == 1, (
+            "Newsletter email was not archived"
+        )
         assert memory_provider.archived_messages[0] == newsletter_email
 
         # Verify that the newsletter email was labeled
-        assert len(memory_provider.labeled_messages) == 1, "Newsletter email was not labeled"
+        assert len(memory_provider.labeled_messages) == 1, (
+            "Newsletter email was not labeled"
+        )
         assert memory_provider.labeled_messages[0]["message"] == newsletter_email
         assert memory_provider.labeled_messages[0]["label"] == "Newsletters"
 
@@ -234,7 +246,9 @@ class TestIntegration:
         assert success, "Failed to run single iteration"
 
         # Verify that no actions were taken on the regular email
-        assert len(memory_provider.replied_messages) == 0, "Regular email was replied to"
+        assert len(memory_provider.replied_messages) == 0, (
+            "Regular email was replied to"
+        )
         assert len(memory_provider.archived_messages) == 0, "Regular email was archived"
         assert len(memory_provider.labeled_messages) == 0, "Regular email was labeled"
 
@@ -288,11 +302,23 @@ class TestIntegration:
             assert success, "Failed to run single iteration"
 
             # Verify that actions were logged but not executed
-            mock_logger_info.assert_any_call("[READ-ONLY] Would execute actions for rule: Reply to Recruiters")
-            mock_logger_info.assert_any_call("[READ-ONLY] Would reply to message: Exciting Job Opportunity")
-            mock_logger_info.assert_any_call("[READ-ONLY] Would apply label 'Recruiters' to message: Exciting Job Opportunity")
+            mock_logger_info.assert_any_call(
+                "[READ-ONLY] Would execute actions for rule: Reply to Recruiters"
+            )
+            mock_logger_info.assert_any_call(
+                "[READ-ONLY] Would reply to message: Exciting Job Opportunity"
+            )
+            mock_logger_info.assert_any_call(
+                "[READ-ONLY] Would apply label 'Recruiters' to message: Exciting Job Opportunity"
+            )
 
         # Verify that no actual actions were taken
-        assert len(memory_provider.replied_messages) == 0, "Email was replied to in read-only mode"
-        assert len(memory_provider.archived_messages) == 0, "Email was archived in read-only mode"
-        assert len(memory_provider.labeled_messages) == 0, "Email was labeled in read-only mode"
+        assert len(memory_provider.replied_messages) == 0, (
+            "Email was replied to in read-only mode"
+        )
+        assert len(memory_provider.archived_messages) == 0, (
+            "Email was archived in read-only mode"
+        )
+        assert len(memory_provider.labeled_messages) == 0, (
+            "Email was labeled in read-only mode"
+        )
